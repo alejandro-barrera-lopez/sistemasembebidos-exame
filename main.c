@@ -144,26 +144,28 @@ void inline disable_watchdog(void) {
 
 void display_led_state(void)
 {
+  lcd_set(led_state == LED_05HZ ? 5 : 0, 3);
 
-  lcd_set(led_state == LED_05HZ ? 5 : 0, 2);
   switch (led_state) {
     case LED_OFF:
-      lcd_set(0, 1);
+      lcd_set(0, 2);
       break;
     case LED_05HZ:
-      lcd_set(0, 1);
+      lcd_set(0, 2);
       break;
     case LED_1HZ:
-      lcd_set(1, 1);
+      lcd_set(1, 2);
       break;
     case LED_2HZ:
-      lcd_set(2, 1);
+      lcd_set(2, 2);
       break;
     default:
       break;
   }
 
-  SegLCD_DP1_On();
+  SegLCD_DP2_On();
+
+  print_debug();
 }
 
 void print_debug(void) {
@@ -186,7 +188,6 @@ void PORTC_PORTD_IRQHandler(void) {
   }
 
   display_led_state();
-  print_debug();
 }
 
 /*!
@@ -205,6 +206,7 @@ int main(void)
   setup_io();
 
   PRINTF("Plantilla exame Sistemas Embebidos: 1a oportunidade 24/25 Q1\r\n");
+  display_led_state();
 
   while (1)
     {
