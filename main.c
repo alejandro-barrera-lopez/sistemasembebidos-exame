@@ -35,6 +35,7 @@
 #include "fsl_device_registers.h"
 #include "fsl_debug_console.h"
 #include "board.h"
+#include "lcd.h"
 
 #include "pin_mux.h"
 /*******************************************************************************
