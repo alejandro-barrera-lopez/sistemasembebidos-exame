@@ -168,10 +168,10 @@ froito da compilación/enlazado*.
     |----------------+-------------------+-------------------|
     | Código         | Sen optimizacións | Con optimizacións |
     |----------------+-------------------+-------------------|
-    | reverse_int1() |                   |                   |
-    | reverse_int2() |                   |                   |
-    | reverse_int3() |                   |                   |
-    | reverse_int4() |                   |                   |
+    | reverse_int1() | 979               | 312               |
+    | reverse_int2() | 249               | 246               |
+    | reverse_int3() | 72 (res. != esp.) | 64 (res. != esp.) |
+    | reverse_int4() | 100               | 53                |
     |----------------+-------------------+-------------------|
 
     Para unha correcta contextualización dos teus resultados
@@ -180,9 +180,9 @@ froito da compilación/enlazado*.
     |--------------------------+---------|
     | Software empregado       | Versión |
     |--------------------------+---------|
-    | Compilador de GNU (GCC)  |         |
-    | Ensamblador de GNU (GAS) |         |
-    | OpenOCD                  |         |
+    | Compilador de GNU (GCC)  | 11.4.0  |
+    | Ensamblador de GNU (GAS) | 2.38    |
+    | OpenOCD                  | 0.11.0  |
     |--------------------------+---------|
 
     Engade un /commit/ incluíndo todos eses datos nas táboas, claro.
