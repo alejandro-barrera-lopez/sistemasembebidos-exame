@@ -47,27 +47,28 @@
     0.5 Hz (1 acendido cada 2 segundos)
     0 Hz (o LED permanece apagado)
 
-O sistema permitirá conmutar entre eses 4 estados do LED mediante os dous botóns,
-seguindo esta progresión:
+  O sistema permitirá conmutar entre eses 4 estados do LED mediante os dous botóns,
+  seguindo esta progresión:
 
-0 Hz <-> 0.5 Hz <-> 1 Hz <-> 2 Hz
+  0 Hz <-> 0.5 Hz <-> 1 Hz <-> 2 Hz
 
-O botón da dereita, incremente a velocidade (ata o máximo de 2 Hz), e o da esquerda
-diminúea (ata estar o LED apagado). O sistema comezará acendendo o LED cunha
-frecuencia de 1 Hz.
+  O botón da dereita, incremente a velocidade (ata o máximo de 2 Hz), e o da esquerda
+  diminúea (ata estar o LED apagado). O sistema comezará acendendo o LED cunha
+  frecuencia de 1 Hz.
 
-O LCD da placa mostrará en todo momento os Hz cos que está a funcionar o LED.
+  O LCD da placa mostrará en todo momento os Hz cos que está a funcionar o LED.
 
-Podedes empregar o temporizador da placa que prefirades para levar a conta do tempo,
-agás o SysTick.
+  Podedes empregar o temporizador da placa que prefirades para levar a conta do tempo,
+  agás o SysTick.
  *
  */
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define RED_LED 29U
-#define GREEN_LED 5U
-#define SW1 3U  // Botón dereito - LED verde
+#define LED_GREEN (5U)  // PTD5
+// #define LED_RED   (29U) // PTE29
+#define BTN_RIGHT (3U)  // PTC3
+#define BTN_LEFT  (12U) // PTC12
 
 typedef enum
 {
@@ -93,7 +94,69 @@ volatile led_state_t led_state = LED_1HZ;
 /*******************************************************************************
  * Code
  ******************************************************************************/
+void irclk_ini()
+{
+    MCG->C1 = MCG_C1_IRCLKEN(1) | MCG_C1_IREFSTEN(1);
+    MCG->C2 = MCG_C2_IRCS(0);
+}
 
+void setup_io(void) {
+    // Habilitar reloxos de portos
+    SIM->SCGC5 |= (SIM_SCGC5_PORTC_MASK | SIM_SCGC5_PORTE_MASK | SIM_SCGC5_PORTD_MASK);
+
+    // Configurar LED verde
+    PORTD->PCR[LED_GREEN] = PORT_PCR_MUX(1U);
+    GPIOD->PDDR = (1U << LED_GREEN);
+    GPIOD->PCOR = (1U << LED_GREEN); // Apagado por defecto
+
+    // Configurar botóns
+    PORTC->PCR[BTN_RIGHT] = PORT_PCR_MUX(1U);
+    PORTC->PCR[BTN_LEFT] = PORT_PCR_MUX(1U);
+    PORTC->PCR[BTN_RIGHT] |= (PORT_PCR_PE(1U) | PORT_PCR_PS(1U));
+    PORTC->PCR[BTN_LEFT] |= (PORT_PCR_PE(1U) | PORT_PCR_PS(1U));
+    PORTC->PCR[BTN_RIGHT] |= PORT_PCR_IRQC(0xA);
+    PORTC->PCR[BTN_LEFT] |= PORT_PCR_IRQC(0xA);
+    GPIOC->PDDR &= ~(1U << BTN_RIGHT);
+    GPIOC->PDDR &= ~(1U << BTN_LEFT);
+
+    // Habilitar interrupcións para os botóns
+    NVIC_EnableIRQ(PORTC_PORTD_IRQn);
+
+    // Inicializar LCD
+    // irclk_ini();
+    // lcd_ini();
+}
+
+void inline disable_button_interrupts(void)
+{
+    PORTC->PCR[BTN_RIGHT] &= ~PORT_PCR_IRQC_MASK;  // Desactivar interrupción no botón dereito
+    PORTC->PCR[BTN_LEFT] &= ~PORT_PCR_IRQC_MASK;  // Desactivar interrupción no botón esquerdo
+}
+
+void inline disable_watchdog(void) {
+    // Disable watchdog timer
+    SIM->COPC = 0;
+}
+
+void PORTC_PORTD_IRQHandler(void) {
+  /* Clear external interrupt flag. */
+  if ((PORTC->PCR[BTN_RIGHT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
+  {
+    PRINTF("Botón dereito pulsado\r\n");
+    // lcd_display_dec(0);
+    PORTC->PCR[BTN_RIGHT] |= PORT_PCR_ISF(1); // Limpar interrupción
+  }
+
+  // Comprobar botón esquerdo (SW3 - LED vermello)
+  if ((PORTC->PCR[BTN_LEFT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
+  {
+    PRINTF("Botón esquerdo pulsado\r\n");
+    // lcd_display_dec(1);
+    PORTC->PCR[BTN_LEFT] |= PORT_PCR_ISF(1); // Limpar interrupción
+  }
+
+  // TODO: Implementar lóxica
+}
 
 /*!
  * @brief Main function
@@ -107,6 +170,9 @@ int main(void)
   BOARD_BootClockRUN();
   BOARD_InitDebugConsole();
 
+  disable_watchdog();
+  setup_io();
+
   PRINTF("Plantilla exame Sistemas Embebidos: 1a oportunidade 24/25 Q1\r\n");
 
   while (1)
@@ -115,5 +181,5 @@ int main(void)
       PUTCHAR(ch);
     }
 
-  disable_button_interrupts();
+  // disable_button_interrupts();
 }
