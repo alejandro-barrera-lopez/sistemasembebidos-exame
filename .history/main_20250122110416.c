@@ -89,7 +89,6 @@ void set_leds(uint8_t safe);
 void actualizar_leds(void);
 void alternar_porta(volatile porta_state_t *state);
 void comprobar_seguridade(void);
-void print_debug(void);
 
 
 

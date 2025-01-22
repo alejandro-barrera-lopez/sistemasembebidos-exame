@@ -42,7 +42,7 @@ TARGET = main
 
 # Flags de linkado e compilado
 ARCHFLAGS = -mthumb -mcpu=cortex-m0plus
-CFLAGS_BASE = $(ARCHFLAGS) -Wall $(INCLUDES)
+CFLAGS_BASE = $(ARCHFLAGS) -Wall -Wunused $(INCLUDES)
 CFLAGS_DEBUG = $(CFLAGS_BASE) -O0 -g3 -DDEBUG
 CFLAGS_RELEASE = $(CFLAGS_BASE) -O2 -DNDEBUG
 ASFLAGS = $(ARCHFLAGS)

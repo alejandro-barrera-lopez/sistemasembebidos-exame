@@ -82,14 +82,6 @@ typedef enum
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-void setup_io(void);
-void disable_button_interrupts(void);
-void disable_watchdog(void);
-void set_leds(uint8_t safe);
-void actualizar_leds(void);
-void alternar_porta(volatile porta_state_t *state);
-void comprobar_seguridade(void);
-void print_debug(void);
 
 
 
@@ -175,7 +167,7 @@ void comprobar_seguridade(void) {
 void print_debug(void) {
     PRINTF("Porta 1: %s\r\n", (porta1_state == PORTA_ABERTA) ? "Aberta" : "Pechada");
     PRINTF("Porta 2: %s\r\n", (porta2_state == PORTA_ABERTA) ? "Aberta" : "Pechada");
-    PRINTF("Seguridade: %s\r\n\r\n", (seguridade_state == SAFE) ? "SAFE" : "UNSAFE");
+    PRINTF("Seguridade: %s\r\n", (seguridade_state == SAFE) ? "SAFE" : "UNSAFE");
 }
 
 void PORTC_PORTD_IRQHandler(void) {
@@ -213,6 +205,7 @@ int main(void)
 
   disable_watchdog();
   setup_io();
+
 
   PRINTF("Plantilla exame Sistemas Embebidos: 1a oportunidade 24/25 Q1\r\n");
   print_debug();

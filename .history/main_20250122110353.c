@@ -82,14 +82,6 @@ typedef enum
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-void setup_io(void);
-void disable_button_interrupts(void);
-void disable_watchdog(void);
-void set_leds(uint8_t safe);
-void actualizar_leds(void);
-void alternar_porta(volatile porta_state_t *state);
-void comprobar_seguridade(void);
-void print_debug(void);
 
 
 
