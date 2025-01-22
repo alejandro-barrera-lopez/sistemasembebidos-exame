@@ -135,40 +135,19 @@ void inline disable_watchdog(void) {
     SIM->COPC = 0;
 }
 
-void set_led(uint8_t green)
-{
-    if (green)
-    {
-        GPIOE->PSOR = (1U << LED_RED);   // Apagar vermello
-        GPIOD->PCOR = (1U << LED_GREEN); // Encender verde
-    }
-    else
-    {
-        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
-        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
-    }
-}
-
-
 void actualizar_leds(void) {
-  set_led(seguridade_state == SAFE);
-}
-
-void alternar_porta(volatile porta_state_t *state) {
-  *state = (*state == PORTA_ABERTA) ? PORTA_PECHADA : PORTA_ABERTA;
-}
-
-void comprobar_seguridade(void) {
-    if (porta1_state == PORTA_PECHADA &&
-        porta2_state == PORTA_PECHADA) {
-
-        seguridade_state = SAFE;
+    if (seguridade_state == SAFE) {
+        GPIO_PortSet(GPIOE, LED_RED);
+        GPIO_PortClear(GPIOE, LED_GREEN);
     } else {
-        seguridade_state = UNSAFE;
+        GPIO_PortSet(GPIOE, LED_GREEN);
+        GPIO_PortClear(GPIOE, LED_RED);
     }
 }
 
-
+void alternar_porta(porta_state_t *state) {
+    *state = (*state == PORTA_ABERTA) ? PORTA_PECHADA : PORTA_ABERTA;
+}
 
 void PORTC_PORTD_IRQHandler(void) {
   /* Clear external interrupt flag. */
@@ -185,10 +164,14 @@ void PORTC_PORTD_IRQHandler(void) {
     PORTC->PCR[BTN_LEFT] |= PORT_PCR_ISF(1); // Limpar interrupción
   }
 
-  comprobar_seguridade();
+  // /* Actualizar LEDs */
   actualizar_leds();
 
   // Comprobar botón dereito (SW1 - LED verde)
+
+
+  GPIOD->PCOR = (1U << LED_GREEN); // Encender verde
+  GPIOE->PCOR = (1U << LED_RED); // Apagar vermello
 
 }
 

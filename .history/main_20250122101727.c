@@ -61,10 +61,10 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-#define LED_GREEN (5U)  // PTD5
-#define LED_RED   (29U) // PTE29
-#define BTN_RIGHT (3U)  // PTC3
-#define BTN_LEFT  (12U) // PTC12
+#define LED_GREEN (1U << 5)  // PTD5
+#define LED_RED   (1U << 29) // PTE29
+#define BTN_RIGHT (1U << 3)  // PTC3
+#define BTN_LEFT  (1U << 12) // PTC12
 
 
 typedef enum
@@ -95,101 +95,32 @@ volatile seguridade_state_t seguridade_state = UNSAFE;
 /*******************************************************************************
  * Code
  ******************************************************************************/
-void setup_io(void)
-{
-    // Habilitar reloxos de portos
-    SIM->SCGC5 |= (SIM_SCGC5_PORTC_MASK | SIM_SCGC5_PORTE_MASK | SIM_SCGC5_PORTD_MASK);
 
-    // Configurar LEDs
-    PORTD->PCR[LED_GREEN] = PORT_PCR_MUX(1U);
-    PORTE->PCR[LED_RED] = PORT_PCR_MUX(1U);
-    GPIOE->PDDR = (1U << LED_RED);
-    GPIOD->PDDR = (1U << LED_GREEN);
-
-    // Apagar LEDs inicialmente
-    GPIOE->PSOR = (1U << LED_RED);
-    GPIOD->PSOR = (1U << LED_GREEN);
-
-    // Configurar botóns
-    PORTC->PCR[BTN_RIGHT] = PORT_PCR_MUX(1U);
-    PORTC->PCR[BTN_LEFT] = PORT_PCR_MUX(1U);
-    PORTC->PCR[BTN_RIGHT] |= (PORT_PCR_PE(1U) | PORT_PCR_PS(1U));
-    PORTC->PCR[BTN_LEFT] |= (PORT_PCR_PE(1U) | PORT_PCR_PS(1U));
-    PORTC->PCR[BTN_RIGHT] |= PORT_PCR_IRQC(0xA);
-    PORTC->PCR[BTN_LEFT] |= PORT_PCR_IRQC(0xA);
-    GPIOC->PDDR &= ~(1U << BTN_RIGHT);
-    GPIOC->PDDR &= ~(1U << BTN_LEFT);
-
-    // Habilitar interrupcións
-    NVIC_EnableIRQ(PORTC_PORTD_IRQn);
-}
-
-void disable_button_interrupts(void)
-{
-    PORTC->PCR[BTN_RIGHT] &= ~PORT_PCR_IRQC_MASK;  // Desactivar interrupción no botón dereito
-    PORTC->PCR[BTN_LEFT] &= ~PORT_PCR_IRQC_MASK;  // Desactivar interrupción no botón esquerdo
-}
-
-void inline disable_watchdog(void) {
-    // Disable watchdog timer
-    SIM->COPC = 0;
-}
-
-void set_led(uint8_t green)
-{
-    if (green)
-    {
-        GPIOE->PSOR = (1U << LED_RED);   // Apagar vermello
-        GPIOD->PCOR = (1U << LED_GREEN); // Encender verde
-    }
-    else
-    {
-        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
-        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
-    }
-}
-
-
-void actualizar_leds(void) {
-  set_led(seguridade_state == SAFE);
-}
-
-void alternar_porta(volatile porta_state_t *state) {
-  *state = (*state == PORTA_ABERTA) ? PORTA_PECHADA : PORTA_ABERTA;
-}
-
-void comprobar_seguridade(void) {
-    if (porta1_state == PORTA_PECHADA &&
-        porta2_state == PORTA_PECHADA) {
-
-        seguridade_state = SAFE;
-    } else {
-        seguridade_state = UNSAFE;
-    }
-}
-
-
-
-void PORTC_PORTD_IRQHandler(void) {
+void PORTA1_IRQHandler(void) {
   /* Clear external interrupt flag. */
-  if ((PORTC->PCR[BTN_RIGHT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
-  {
-    alternar_porta(&porta1_state);
-    PORTC->PCR[BTN_RIGHT] |= PORT_PCR_ISF(1); // Limpar interrupción
+  GPIO_PortClearInterruptFlags(GPIOB, 1U << 2);
+  /* Cambiar estado da porta 1 */
+  if (porta1_state == PORTA_ABERTA) {
+    porta1_state = PORTA_PECHADA;
+  } else {
+    porta1_state = PORTA_ABERTA;
   }
 
-  // Comprobar botón esquerdo (SW3 - LED vermello)
-  if ((PORTC->PCR[BTN_LEFT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
-  {
-    alternar_porta(&porta2_state);
-    PORTC->PCR[BTN_LEFT] |= PORT_PCR_ISF(1); // Limpar interrupción
+  /* Cambiar estado de seguridade */
+  if (porta1_state == PORTA_PECHADA && porta2_state == PORTA_PECHADA) {
+    seguridade_state = SAFE;
+  } else {
+    seguridade_state = UNSAFE;
   }
 
-  comprobar_seguridade();
-  actualizar_leds();
-
-  // Comprobar botón dereito (SW1 - LED verde)
-
+  /* Actualizar LEDs */
+  if (seguridade_state == SAFE) {
+    GPIO_PortSet(GPIOE, LED_RED);
+    GPIO_PortClear(GPIOE, LED_GREEN);
+  } else {
+    GPIO_PortSet(GPIOE, LED_GREEN);
+    GPIO_PortClear(GPIOE, LED_RED);
+  }
 }
 
 
@@ -205,16 +136,11 @@ int main(void)
   BOARD_BootClockRUN();
   BOARD_InitDebugConsole();
 
-  disable_watchdog();
-  setup_io();
-
-
   PRINTF("Plantilla exame Sistemas Embebidos: 1a oportunidade 24/25 Q1\r\n");
 
   while (1)
     {
       ch = GETCHAR();
       PUTCHAR(ch);
-      // delay(100000);
     }
 }

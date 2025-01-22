@@ -159,9 +159,7 @@ void alternar_porta(volatile porta_state_t *state) {
 }
 
 void comprobar_seguridade(void) {
-    if (porta1_state == PORTA_PECHADA &&
-        porta2_state == PORTA_PECHADA) {
-
+    if (porta1_state == PORTA_PECHADA && porta2_state == PORTA_PECHADA) {
         seguridade_state = SAFE;
     } else {
         seguridade_state = UNSAFE;
@@ -185,7 +183,7 @@ void PORTC_PORTD_IRQHandler(void) {
     PORTC->PCR[BTN_LEFT] |= PORT_PCR_ISF(1); // Limpar interrupción
   }
 
-  comprobar_seguridade();
+  // /* Actualizar LEDs */
   actualizar_leds();
 
   // Comprobar botón dereito (SW1 - LED verde)

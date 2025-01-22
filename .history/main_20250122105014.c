@@ -151,21 +151,17 @@ void set_led(uint8_t green)
 
 
 void actualizar_leds(void) {
-  set_led(seguridade_state == SAFE);
+    if (seguridade_state == SAFE) {
+        set_led(0);
+        GPIO_PortClear(GPIOD, LED_GREEN);
+    } else {
+        GPIO_PortSet(GPIOD, LED_GREEN);
+        GPIO_PortClear(GPIOE, LED_RED);
+    }
 }
 
 void alternar_porta(volatile porta_state_t *state) {
-  *state = (*state == PORTA_ABERTA) ? PORTA_PECHADA : PORTA_ABERTA;
-}
-
-void comprobar_seguridade(void) {
-    if (porta1_state == PORTA_PECHADA &&
-        porta2_state == PORTA_PECHADA) {
-
-        seguridade_state = SAFE;
-    } else {
-        seguridade_state = UNSAFE;
-    }
+    *state = (*state == PORTA_ABERTA) ? PORTA_PECHADA : PORTA_ABERTA;
 }
 
 
@@ -185,7 +181,7 @@ void PORTC_PORTD_IRQHandler(void) {
     PORTC->PCR[BTN_LEFT] |= PORT_PCR_ISF(1); // Limpar interrupción
   }
 
-  comprobar_seguridade();
+  // /* Actualizar LEDs */
   actualizar_leds();
 
   // Comprobar botón dereito (SW1 - LED verde)
