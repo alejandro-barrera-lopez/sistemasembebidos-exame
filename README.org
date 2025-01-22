@@ -1,3 +1,5 @@
+*- ACLARACIÓN:* Ao crear a rama "benchmark" esquecinme de facer o checkout a ela, e fixen push aquí, a main. De todas formas, o Makefile sería o mesmo.
+
 * Sistemas Embebidos: Exame 1a oportunidade curso 24/25 - 1ro cuadrimestre
 
 *LER CON ATENCIÓN*
