@@ -38,18 +38,61 @@
 #include "lcd.h"
 
 #include "pin_mux.h"
+/**
+ * @brief A tarefa consiste en programar o acendido e apagado dun dos dous LEDs
+ (un calquera, o que prefirades) cunha frecuencia determinada de entre as seguintes:
+
+    1 Hz (1 acendido cada segundo)
+    2 Hz (2 acendidos cada segundo, isto é, acéndese cada medio segundo)
+    0.5 Hz (1 acendido cada 2 segundos)
+    0 Hz (o LED permanece apagado)
+
+O sistema permitirá conmutar entre eses 4 estados do LED mediante os dous botóns,
+seguindo esta progresión:
+
+0 Hz <-> 0.5 Hz <-> 1 Hz <-> 2 Hz
+
+O botón da dereita, incremente a velocidade (ata o máximo de 2 Hz), e o da esquerda
+diminúea (ata estar o LED apagado). O sistema comezará acendendo o LED cunha
+frecuencia de 1 Hz.
+
+O LCD da placa mostrará en todo momento os Hz cos que está a funcionar o LED.
+
+Podedes empregar o temporizador da placa que prefirades para levar a conta do tempo,
+agás o SysTick.
+ *
+ */
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+#define RED_LED 29U
+#define GREEN_LED 5U
+#define SW1 3U  // Botón dereito - LED verde
 
+typedef enum
+{
+    LED_OFF = 0,
+    LED_05HZ = 2,
+    LED_1HZ = 1,
+    LED_2HZ = 3
+} led_state_t;
 
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
 
 /*******************************************************************************
+ * Variables
+ ******************************************************************************/
+volatile led_state_t led_state = LED_1HZ;
+
+/*******************************************************************************
  * Code
  ******************************************************************************/
+void setup_io(void);
+void disable_button_interrupts(void);
+void disable_watchdog(void);
+
 /*!
  * @brief Main function
  */
@@ -69,4 +112,6 @@ int main(void)
       ch = GETCHAR();
       PUTCHAR(ch);
     }
+
+  disable_button_interrupts();
 }
