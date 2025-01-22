@@ -136,11 +136,11 @@ void inline disable_watchdog(void) {
 
 void set_leds(uint8_t safe) {
     if (safe) {
-        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
-        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
-    } else {
         GPIOE->PSOR = (1U << LED_RED);   // Apagar vermello
         GPIOD->PCOR = (1U << LED_GREEN); // Encender verde
+    } else {
+        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
+        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
     }
 }
 

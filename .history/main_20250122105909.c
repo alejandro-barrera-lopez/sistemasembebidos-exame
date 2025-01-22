@@ -95,7 +95,7 @@ volatile seguridade_state_t seguridade_state = UNSAFE;
 /*******************************************************************************
  * Code
  ******************************************************************************/
-void setup_io(void) {
+void inline setup_io(void) {
     // Habilitar reloxos de portos
     SIM->SCGC5 |= (SIM_SCGC5_PORTC_MASK | SIM_SCGC5_PORTE_MASK | SIM_SCGC5_PORTD_MASK);
 
@@ -134,13 +134,13 @@ void inline disable_watchdog(void) {
     SIM->COPC = 0;
 }
 
-void set_leds(uint8_t safe) {
-    if (safe) {
-        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
-        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
-    } else {
+void set_leds(uint8_t green) {
+    if (green) {
         GPIOE->PSOR = (1U << LED_RED);   // Apagar vermello
         GPIOD->PCOR = (1U << LED_GREEN); // Encender verde
+    } else {
+        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
+        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
     }
 }
 
@@ -162,11 +162,7 @@ void comprobar_seguridade(void) {
     }
 }
 
-void print_debug(void) {
-    PRINTF("Porta 1: %s\r\n", (porta1_state == PORTA_ABERTA) ? "Aberta" : "Pechada");
-    PRINTF("Porta 2: %s\r\n", (porta2_state == PORTA_ABERTA) ? "Aberta" : "Pechada");
-    PRINTF("Seguridade: %s\r\n", (seguridade_state == SAFE) ? "SAFE" : "UNSAFE");
-}
+
 
 void PORTC_PORTD_IRQHandler(void) {
   /* Clear external interrupt flag. */
@@ -185,7 +181,6 @@ void PORTC_PORTD_IRQHandler(void) {
 
   comprobar_seguridade();
   actualizar_leds();
-  print_debug();
 }
 
 
@@ -206,7 +201,6 @@ int main(void)
 
 
   PRINTF("Plantilla exame Sistemas Embebidos: 1a oportunidade 24/25 Q1\r\n");
-  print_debug();
 
   while (1)
     {

@@ -134,13 +134,13 @@ void inline disable_watchdog(void) {
     SIM->COPC = 0;
 }
 
-void set_leds(uint8_t safe) {
-    if (safe) {
-        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
-        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
-    } else {
+void set_leds(uint8_t green) {
+    if (green) {
         GPIOE->PSOR = (1U << LED_RED);   // Apagar vermello
         GPIOD->PCOR = (1U << LED_GREEN); // Encender verde
+    } else {
+        GPIOD->PSOR = (1U << LED_GREEN); // Apagar verde
+        GPIOE->PCOR = (1U << LED_RED);   // Encender vermello
     }
 }
 
@@ -206,7 +206,6 @@ int main(void)
 
 
   PRINTF("Plantilla exame Sistemas Embebidos: 1a oportunidade 24/25 Q1\r\n");
-  print_debug();
 
   while (1)
     {
