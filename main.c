@@ -37,35 +37,111 @@
 #include "board.h"
 
 #include "pin_mux.h"
+/**
+ * @brief A tarefa consiste en levar a cabo o benchmarking das distintas
+ implementacións dunha función reverse_int() (invertir os bits dunha palabra de
+ 32 bits) presentadas nas slides8.pdf, de acordo co exercicio proposto na última
+ diapositiva (e tendo en conta a última versión do PDF, con data de onte mesmo,
+ 21 de xaneiro).
+
+Medirase o rendemento de 4 implementacións desta función, dúas en C e dúas en
+ensamblador, empregando o temporizador SysTick para medir os ciclos de reloxo
+consumidos en cada unha delas. Estas son as catro implementacións, cada unha
+delas estará nun arquivo fonte diferente:
+
+    reverse_int1(), nun arquivo fonte reverse1.c. A versión en C baseada nun bucle,
+      mostrada na diapositiva 2.
+    reverse_int2(), nun arquivo fonte reverse2.s. A versión en ASM máis optimizada
+      da diapositiva 5 (a da dereita, vaia).
+    reverse_int3(), nun arquivo fonte reverse3.s. A versión ASM sen bucle da
+      diapositiva 7, que precisará varios axustes para correr no noso Cortex-M0+.
+    reverse_int4(), nun arquivo fonte reverse4.c. A versión sen bucle en C
+      (diapositiva 8).
+
+O programa correrá unha vez cada unha desas implementacións, medindo os ciclos que
+lle leva a cada unha, e presentará pola interfaz de porto serie o resultado do
+benchmark,.
+ *
+ */
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-
+#define SYSTICK_CLOCK    48000000U  // Ajusta esto según tu frecuencia de reloj
 
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
+unsigned int reverse_int1(unsigned int num);
+unsigned int reverse_int2(unsigned int num);
+unsigned int reverse_int3(unsigned int num);
+unsigned int reverse_int4(unsigned int num);
+
+static inline unsigned int measure_time(unsigned int (*func)(unsigned int), unsigned int value);
+
+/*******************************************************************************
+ * Variables
+ ******************************************************************************/
+const unsigned int num = 0x5ca1ab1e;
+
 
 /*******************************************************************************
  * Code
  ******************************************************************************/
+static inline unsigned int measure_time(unsigned int (*func)(unsigned int), unsigned int value) {
+    unsigned int start, end, result;
+
+    // Configura o SysTick para contar ciclos
+    SysTick->LOAD = 0xFFFFFF;
+    SysTick->VAL = 0;
+    SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
+
+    start = SysTick->VAL;
+    result = func(value);
+    end = SysTick->VAL;
+
+    // Deshabilita o SysTick
+    SysTick->CTRL = 0;
+
+    // Calcula ticks
+    return start - end;
+}
+
 /*!
  * @brief Main function
  */
 int main(void)
 {
-  char ch;
+  unsigned int ticks, result;
 
   /* Init board hardware. */
   BOARD_InitPins();
   BOARD_BootClockRUN();
   BOARD_InitDebugConsole();
 
-  PRINTF("Plantilla exame Sistemas Embebidos: 1a oportunidade 24/25 Q1\r\n");
+  PRINTF("\r\nBenchmarking reverse_int routines:\r\n");
+  PRINTF("Number to reverse: %u\r\n", num);
 
-  while (1)
-    {
-      ch = GETCHAR();
-      PUTCHAR(ch);
-    }
+  // Test reverse_int1
+  ticks = measure_time(reverse_int1, num);
+  result = reverse_int1(num);
+  PRINTF("Elapsed ticks with reverse_int1(): %u (%u)\r\n", ticks, result);
+
+  // Test reverse_int2
+  ticks = measure_time(reverse_int2, num);
+  result = reverse_int2(num);
+  PRINTF("Elapsed ticks with reverse_int2(): %u (%u)\r\n", ticks, result);
+
+  // Test reverse_int3
+  ticks = measure_time(reverse_int3, num);
+  result = reverse_int3(num);
+  PRINTF("Elapsed ticks with reverse_int3(): %u (%u)\r\n", ticks, result);
+
+  // Test reverse_int4
+  ticks = measure_time(reverse_int4, num);
+  result = reverse_int4(num);
+  PRINTF("Elapsed ticks with reverse_int4(): %u (%u)\r\n", ticks, result);
+
+  while (1) {
+      __WFI();
+  }
 }
