@@ -80,10 +80,6 @@ typedef enum
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-void irclk_ini(void);
-void setup_io(void);
-void disable_button_interrupts(void);
-void disable_watchdog(void);
 
 /*******************************************************************************
  * Variables
@@ -93,7 +89,9 @@ volatile led_state_t led_state = LED_1HZ;
 /*******************************************************************************
  * Code
  ******************************************************************************/
-
+void setup_io(void);
+void disable_button_interrupts(void);
+void disable_watchdog(void);
 
 /*!
  * @brief Main function

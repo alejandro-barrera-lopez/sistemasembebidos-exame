@@ -69,30 +69,17 @@ agás o SysTick.
 #define GREEN_LED 5U
 #define SW1 3U  // Botón dereito - LED verde
 
-typedef enum
-{
-    LED_OFF = 0,
-    LED_05HZ = 2,
-    LED_1HZ = 1,
-    LED_2HZ = 3
-} led_state_t;
-
 /*******************************************************************************
  * Prototypes
  ******************************************************************************/
-void irclk_ini(void);
-void setup_io(void);
-void disable_button_interrupts(void);
-void disable_watchdog(void);
-
-/*******************************************************************************
- * Variables
- ******************************************************************************/
-volatile led_state_t led_state = LED_1HZ;
 
 /*******************************************************************************
  * Code
  ******************************************************************************/
+void setup_io(void);
+void disable_button_interrupts(void);
+void disable_watchdog(void);
+
 
 
 /*!
