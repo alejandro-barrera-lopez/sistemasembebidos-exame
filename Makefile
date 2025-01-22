@@ -75,7 +75,7 @@ flash: $(TARGET).elf
 clean:
 	rm -f $(OBJS)
 
-mrproper: clean
+cleanall: clean
 	rm -f $(TARGET).elf $(TARGET).map
 
 .PHONY: all debug release clean mrproper gdb flash
