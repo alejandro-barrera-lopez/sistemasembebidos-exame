@@ -96,8 +96,12 @@ volatile led_state_t led_state = LED_1HZ;
  ******************************************************************************/
 void irclk_ini()
 {
-    MCG->C1 = MCG_C1_IRCLKEN(1) | MCG_C1_IREFSTEN(1);
-    MCG->C2 = MCG_C2_IRCS(0);
+  // Habilitar reloxo interno
+  MCG->C1 = MCG->C1 | MCG_C1_IRCLKEN(1);
+  MCG->C1 = MCG->C1 | MCG_C1_IREFSTEN(1);
+
+  // // Limpar bit IRCS
+  MCG->C2 = MCG->C2 & ~MCG_C2_IRCS_MASK;
 }
 
 void setup_io(void) {
@@ -123,8 +127,8 @@ void setup_io(void) {
     NVIC_EnableIRQ(PORTC_PORTD_IRQn);
 
     // Inicializar LCD
-    // irclk_ini();
-    // lcd_ini();
+    irclk_ini();
+    lcd_ini();
 }
 
 void inline disable_button_interrupts(void)
@@ -143,7 +147,7 @@ void PORTC_PORTD_IRQHandler(void) {
   if ((PORTC->PCR[BTN_RIGHT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
   {
     PRINTF("Botón dereito pulsado\r\n");
-    // lcd_display_dec(0);
+    lcd_display_dec(0);
     PORTC->PCR[BTN_RIGHT] |= PORT_PCR_ISF(1); // Limpar interrupción
   }
 
@@ -151,7 +155,7 @@ void PORTC_PORTD_IRQHandler(void) {
   if ((PORTC->PCR[BTN_LEFT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
   {
     PRINTF("Botón esquerdo pulsado\r\n");
-    // lcd_display_dec(1);
+    lcd_display_dec(1);
     PORTC->PCR[BTN_LEFT] |= PORT_PCR_ISF(1); // Limpar interrupción
   }
 
