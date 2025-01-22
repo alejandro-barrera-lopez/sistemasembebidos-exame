@@ -73,9 +73,9 @@
 typedef enum
 {
     LED_OFF = 0,
-    LED_05HZ = 2,
-    LED_1HZ = 1,
-    LED_2HZ = 3
+    LED_05HZ,
+    LED_1HZ,
+    LED_2HZ
 } led_state_t;
 
 /*******************************************************************************
@@ -142,24 +142,51 @@ void inline disable_watchdog(void) {
     SIM->COPC = 0;
 }
 
-void PORTC_PORTD_IRQHandler(void) {
-  /* Clear external interrupt flag. */
-  if ((PORTC->PCR[BTN_RIGHT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
-  {
-    PRINTF("Botón dereito pulsado\r\n");
-    lcd_display_dec(0);
-    PORTC->PCR[BTN_RIGHT] |= PORT_PCR_ISF(1); // Limpar interrupción
+void display_led_state(void)
+{
+
+  lcd_set(led_state == LED_05HZ ? 5 : 0, 2);
+  switch (led_state) {
+    case LED_OFF:
+      lcd_set(0, 1);
+      break;
+    case LED_05HZ:
+      lcd_set(0, 1);
+      break;
+    case LED_1HZ:
+      lcd_set(1, 1);
+      break;
+    case LED_2HZ:
+      lcd_set(2, 1);
+      break;
+    default:
+      break;
   }
 
+  SegLCD_DP1_On();
+}
+
+void print_debug(void) {
+    PRINTF("LED state: %d\r\n", led_state);
+}
+
+void PORTC_PORTD_IRQHandler(void) {
   // Comprobar botón esquerdo (SW3 - LED vermello)
   if ((PORTC->PCR[BTN_LEFT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
   {
     PRINTF("Botón esquerdo pulsado\r\n");
-    lcd_display_dec(1);
+    led_state = (led_state == LED_OFF) ? LED_2HZ : (led_state - 1);
     PORTC->PCR[BTN_LEFT] |= PORT_PCR_ISF(1); // Limpar interrupción
   }
+  if ((PORTC->PCR[BTN_RIGHT] >> PORT_PCR_ISF_SHIFT) & 0x1U)
+  {
+    PRINTF("Botón dereito pulsado\r\n");
+    led_state = (led_state == LED_2HZ) ? LED_OFF : (led_state + 1);
+    PORTC->PCR[BTN_RIGHT] |= PORT_PCR_ISF(1); // Limpar interrupción
+  }
 
-  // TODO: Implementar lóxica
+  display_led_state();
+  print_debug();
 }
 
 /*!
